@@ -19,36 +19,56 @@ helpers do
   # @param [String] academic_register Student's academic register	
   # @return [String] DOM of activities tab
   def mount_activities_dom academic_register
+    activities_dom = ''
+    last_bimester = 0
 
     activities_file = JSON.parse( File.read( File.join(File.dirname(__FILE__), '../data/activities.json' ), :encoding => 'utf-8') )
 
     # Some users don't have an academic register. Ex.: AVA Admin
     return 'RA inválido' if not activities_file.key? academic_register
 
-    activities_data = activities_file[academic_register]
+    academic_records = activities_file[academic_register]
 
-    # Because of the structure of file (Course => Bimesters => Activities) it's necessary to convert the values back to hash 
-    # Thus "activities_data.values" equates to "Bimesters => Activities", discarding the courses
-    bimesters = Hash[*activities_data.values] 	
+    cycles_titles = ['Ciclo Básico', 'Ciclo Profissional']
+    cycle_index = 0
+  
+    academic_records.reverse.each do |record| # now a student 
+    # can have many academic records associated
 
-    activities_dom = '<table class="table"><thead><tr><th>Bimestre</th><th>Código</th><th>Disciplina</th></tr></thead><tbody>'	
+      # Because of the structure of file (Course => Bimesters => Activities) it's necessary to convert the values back to hash 
+      # Thus "activities_data.values" equates to "Bimesters => Activities", discarding the courses
+      bimesters = Hash[*record.values]
 
-    bimesters.each do |b|		
-      index = b[0]
-      activities = b[1]
+      activities_dom << "<fieldset>"\
+        "<legend>#{cycles_titles[cycle_index]}</legend>"\
+        "<table class='table'>"\
+        "<thead><tr>"\
+        "<th>Bimestre</th>"\
+        "<th>Código</th>"\
+        "<th>Disciplina</th>"\
+        "</tr></thead><tbody>"
 
-      activities_dom << '<tr>'
-      activities_dom << "<td rowspan='#{activities.length}'>#{index}</td>"
+      bimesters.each_with_index do |bim, bim_index|
+        index = last_bimester + bim[0].to_i
+        activities = bim[1] || []
+ 
+        activities_dom << '<tr>'
+        activities_dom << "<td rowspan='#{activities.size}'>#{index}</td>"
+      
+        activities.sort! { |x,y| x['name'] <=> y['name'] }  
+        activities.each_with_index do |a, i|                                     
+          activities_dom << '<tr>' if i > 0
+          activities_dom << "<td>#{a['code']}</td><td>#{a['name']}</td>"
+          activities_dom << '</tr>'
+        end
 
-      activities.sort! { |x,y| x['name'] <=> y['name'] }  
-      activities.each_with_index do |a, i|					
-        activities_dom << '<tr>' if i > 0
-        activities_dom << "<td>#{a['code']}</td><td>#{a['name']}</td>"
-        activities_dom << '</tr>'
-      end				
+        last_bimester = index if bim_index == bimesters.size - 1
+      end
+ 
+      activities_dom << '</tbody></table></fieldset>'
+      cycle_index += 1
     end
-
-    activities_dom << '</tbody></table>'
+    activities_dom
   end
 
 
