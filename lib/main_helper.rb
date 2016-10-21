@@ -57,24 +57,48 @@ helpers do
   # @param [String] academic_register Student's academic register	
   # @return [String] DOM of grades tab
   def mount_grades_dom academic_register
-
+    grades_dom = ''
     grades_file = JSON.parse( File.read( File.join(File.dirname(__FILE__), '../data/grades.json'), :encoding => 'utf-8') )
 
     # Some users don't have an academic register. Ex.: AVA Admin
     return 'RA inválido' if not grades_file.key? academic_register
 
-    grades_data = grades_file[academic_register]
+    academic_records = grades_file[academic_register]
 
-    grades_dom = '<table class="table"><thead><tr><th>Código</th><th>Disciplina</th><th>Data de Conclusão</th><th>Nota Final</th><th>Frequência Total (%)</th><th>Situação Atual</th></tr></thead><tbody>'
+    cycles_titles = ['Ciclo Profissional', 'Ciclo Básico']
+    cycle_index = 0
+    cycle_index = 1 if academic_records == 1
 
-    grades_data.sort! { |x,y| x['name'] <=> y['name'] }  
-    grades_data.each do |g|
-      grade = g['grade'].nil? ? '-' : g['grade']
-      attendance = g['attendance'].nil? ? '-' : g['attendance']
-      grades_dom << "<tr><td>#{g['code']}</td><td>#{g['name']}</td><td>#{g['date_conclusion']}</td><td>#{grade}</td><td>#{attendance}</td><td>#{g['status']}</td></tr>"
+    academic_records.each do |record| # now a student 
+    # can have many academic records associated
+    
+      grades_dom << "<fieldset>"\
+        "<legend>#{cycles_titles[cycle_index]}</legend>"\
+        "<table class='table'><thead>"\
+        "<tr><th style='width:10%'>Código</th>"\
+        "<th style='width:20%'>Disciplina</th>"\
+        "<th style='width:15%'>Data de Conclusão</th>"\
+        "<th style='width:15%'>Nota Final</th>"\
+        "<th style='width:20%'>Frequência Total (%)</th>"\
+        "<th style='width:20%'>Situação Atual</th>"\
+        "</tr></thead><tbody>"
+    
+      record.sort! { |x,y| x['name'] <=> y['name'] }  
+      record.each do |activity|
+        grade = activity['grade'].nil? ? '-' : activity['grade']
+        attendance = activity['attendance'].nil? ? '-' : activity['attendance']
+        grades_dom << "<tr><td style='width:10%'>#{activity['code']}</td>"\
+          "<td style='width:20%'>#{activity['name']}</td>"\
+          "<td style='width:15%'>#{activity['date_conclusion']}</td>"\
+          "<td style='width:15%'>#{grade}</td>"\
+          "<td style='width:20%'>#{attendance}</td>"\
+          "<td style='width:20%'>#{activity['status']}</td></tr>"
+      end       
+
+      grades_dom << '</tbody></table></fieldset>'
+      cycle_index += 1
     end
-
-    grades_dom << '</tbody></table>'
+    grades_dom
   end
 
 	
@@ -119,10 +143,7 @@ helpers do
           #{activities_dom}
         </div>
         <div id='grade'>
-          <fieldset>
-            <legend>Ciclo Básico</legend>
-            #{grades_dom}
-          </fieldset>
+          #{grades_dom}
         </div>
         <div id='rates'>
           #{rates_dom}
