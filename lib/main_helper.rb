@@ -65,9 +65,9 @@ helpers do
 
     academic_records = grades_file[academic_register]
 
-    cycles_titles = ['Ciclo Profissional', 'Ciclo Básico']
-    cycle_index = 0
-    cycle_index = 1 if academic_records == 1
+    cycles_titles = ['Ciclo Básico', 'Ciclo Profissional']
+    cycle_index = cycles_titles.size - 1
+    cycle_index = 0 if academic_records.size == 1
 
     academic_records.each do |record| # now a student 
     # can have many academic records associated
@@ -96,7 +96,7 @@ helpers do
       end       
 
       grades_dom << '</tbody></table></fieldset>'
-      cycle_index += 1
+      cycle_index -= 1
     end
     grades_dom
   end
