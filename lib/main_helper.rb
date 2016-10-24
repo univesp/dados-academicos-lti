@@ -27,27 +27,20 @@ helpers do
     # Some users don't have an academic register. Ex.: AVA Admin
     return 'RA inválido' if not activities_file.key? academic_register
 
-    academic_records = activities_file[academic_register]
+    activities_dom <<  "<table class='table'>"\
+      "<thead><tr>"\
+      "<th>Bimestre</th>"\
+      "<th>Código</th>"\
+      "<th>Disciplina</th>"\
+      "</tr></thead><tbody>" 
 
-    cycles_titles = ['Ciclo Básico', 'Ciclo Profissional']
-    cycle_index = 0
-  
+    academic_records = activities_file[academic_register]
     academic_records.reverse.each do |record| # now a student 
     # can have many academic records associated
 
       # Because of the structure of file (Course => Bimesters => Activities) it's necessary to convert the values back to hash 
       # Thus "activities_data.values" equates to "Bimesters => Activities", discarding the courses
       bimesters = Hash[*record.values]
-
-      activities_dom << "<fieldset>"\
-        "<legend>#{cycles_titles[cycle_index]}</legend>"\
-        "<table class='table'>"\
-        "<thead><tr>"\
-        "<th>Bimestre</th>"\
-        "<th>Código</th>"\
-        "<th>Disciplina</th>"\
-        "</tr></thead><tbody>"
-
       bimesters.each_with_index do |bim, bim_index|
         index = last_bimester + bim[0].to_i
         activities = bim[1] || []
@@ -61,13 +54,10 @@ helpers do
           activities_dom << "<td>#{a['code']}</td><td>#{a['name']}</td>"
           activities_dom << '</tr>'
         end
-
         last_bimester = index if bim_index == bimesters.size - 1
-      end
- 
-      activities_dom << '</tbody></table></fieldset>'
-      cycle_index += 1
+      end 
     end
+    activities_dom << '</tbody></table>'
     activities_dom
   end
 
@@ -83,41 +73,42 @@ helpers do
     # Some users don't have an academic register. Ex.: AVA Admin
     return 'RA inválido' if not grades_file.key? academic_register
 
+    grades_dom << "<table class='table'><thead>"\
+      "<tr><th style='width:10%'>Código</th>"\
+      "<th style='width:20%'>Disciplina</th>"\
+      "<th style='width:15%'>Data de Conclusão</th>"\
+      "<th style='width:15%'>Nota Final</th>"\
+      "<th style='width:20%'>Frequência Total (%)</th>"\
+      "<th style='width:20%'>Situação Atual</th>"\
+      "</tr></thead><tbody>"
+
+    all_activities = []
     academic_records = grades_file[academic_register]
-
-    cycles_titles = ['Ciclo Básico', 'Ciclo Profissional']
-    cycle_index = cycles_titles.size - 1
-    cycle_index = 0 if academic_records.size == 1
-
     academic_records.each do |record| # now a student 
     # can have many academic records associated
-    
-      grades_dom << "<fieldset>"\
-        "<legend>#{cycles_titles[cycle_index]}</legend>"\
-        "<table class='table'><thead>"\
-        "<tr><th style='width:10%'>Código</th>"\
-        "<th style='width:20%'>Disciplina</th>"\
-        "<th style='width:15%'>Data de Conclusão</th>"\
-        "<th style='width:15%'>Nota Final</th>"\
-        "<th style='width:20%'>Frequência Total (%)</th>"\
-        "<th style='width:20%'>Situação Atual</th>"\
-        "</tr></thead><tbody>"
-    
-      record.sort! { |x,y| x['name'] <=> y['name'] }  
       record.each do |activity|
-        grade = activity['grade'].nil? ? '-' : activity['grade']
-        attendance = activity['attendance'].nil? ? '-' : activity['attendance']
-        grades_dom << "<tr><td style='width:10%'>#{activity['code']}</td>"\
-          "<td style='width:20%'>#{activity['name']}</td>"\
-          "<td style='width:15%'>#{activity['date_conclusion']}</td>"\
-          "<td style='width:15%'>#{grade}</td>"\
-          "<td style='width:20%'>#{attendance}</td>"\
-          "<td style='width:20%'>#{activity['status']}</td></tr>"
-      end       
-
-      grades_dom << '</tbody></table></fieldset>'
-      cycle_index -= 1
+        all_activities << activity
+      end
     end
+         
+    all_activities.sort! { |x,y| x['name'] <=> y['name'] }
+    all_activities.each do |activity|
+      grade = activity['grade'].nil? ? '-' : activity['grade']
+      grade = '-' if activity['name'].match /^projeto integrador/i
+      attendance = activity['attendance'].nil? ? '-' : activity['attendance']
+      attendance = '-' if activity['name'].match /^projeto integrador/i
+      status = activity['status']
+      status = 'Concluído' if activity['name'].match /^projeto integrador/i and activity['status'] == 'Aprovado'
+
+      grades_dom << "<tr><td style='width:10%'>#{activity['code']}</td>"\
+        "<td style='width:20%'>#{activity['name']}</td>"\
+        "<td style='width:15%'>#{activity['date_conclusion']}</td>"\
+        "<td style='width:15%'>#{grade}</td>"\
+        "<td style='width:20%'>#{attendance}</td>"\
+        "<td style='width:20%'>#{status}</td></tr>"
+    end       
+    
+    grades_dom << '</tbody></table>'
     grades_dom
   end
 
