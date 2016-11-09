@@ -9,23 +9,19 @@ configure do
   set :protection, :except => :frame_options
 end
 
+post '/' do
+  ra = params[:ra]
+  begin 
+    # Ensures that the request comes from Canvas                
+    return 'Chave de aplicativo inválida' unless authorize params[:oauth_consumer_key]
 
-  def exec academic_register
-    activities_dom = mount_activities_dom academic_register	
+    academic_register = params[:custom_canvas_user_login_id]
+    activities_dom = mount_activities_dom academic_register
     grades_dom = mount_grades_dom academic_register
     rates_dom = mount_rates_dom academic_register
-    
-    mount_page_dom activities_dom, grades_dom, rates_dom		
-  end
+ 
+    mount_page_dom activities_dom, grades_dom, rates_dom
 
-
-get '/' do
-  ra = '1501028'
-  begin 
-    ## Ensures that the request comes from Canvas                
-    #return 'Chave de aplicativo inválida' unless authorize params[:oauth_consumer_key]
-       
-    result = exec ra
     write_log "GET OK. Requester: #{ra}", :info
   rescue Exception => e
     result = { :status => 'EXCEPTION' } 

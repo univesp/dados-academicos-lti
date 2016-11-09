@@ -93,13 +93,14 @@ helpers do
          
     all_activities.sort! { |x,y| x['name'] <=> y['name'] }
     all_activities.each do |activity|
-      grade = activity['grade'].nil? ? '-' : activity['grade']
-      grade = '-' if activity['name'].match /^projeto integrador/i
-      attendance = activity['attendance'].nil? ? '-' : activity['attendance']
-      attendance = '-' if activity['name'].match /^projeto integrador/i
+      grade = activity['grade'].to_s.gsub('.',',')
+      attendance = activity['attendance'].to_s.gsub('.',',')
       status = activity['status']
-      status = 'Concluído' if activity['name'].match /^projeto integrador/i and activity['status'] == 'Aprovado'
-
+      if activity['hide_grades_and_attendances'] or activity['status'] == 'Aproveitamento de Estudos'
+        grade = '-'
+        attendance = '-'
+        status = 'Concluído' if activity['hide_grades_and_attendances'] and activity['status'] == 'Aprovado' 
+      end
       grades_dom << "<tr><td style='width:10%'>#{activity['code']}</td>"\
         "<td style='width:20%'>#{activity['name']}</td>"\
         "<td style='width:15%'>#{activity['date_conclusion']}</td>"\
@@ -206,8 +207,8 @@ helpers do
     rates_data = rates_file[academic_register] 
 
     rates_dom = ''
-    rates_dom << "<p>Percentual de progressão: <strong>#{rates_data['progression_rate']}%</strong></p>"
-    rates_dom << "<p>Rendimento: <strong>#{rates_data['achievement_rate']}</strong></p>"
+    rates_dom << "<p>Percentual de progressão: <strong>#{rates_data['progression_rate'].to_s.gsub('.',',')}%</strong></p>"
+    rates_dom << "<p>Rendimento: <strong>#{rates_data['achievement_rate'].to_s.gsub('.',',')}</strong></p>"
   end
 
 end
