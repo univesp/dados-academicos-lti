@@ -10,7 +10,6 @@ configure do
 end
 
 post '/' do
-  ra = params[:ra]
   begin 
     # Ensures that the request comes from Canvas                
     return 'Chave de aplicativo inválida' unless authorize params[:oauth_consumer_key]
@@ -20,9 +19,9 @@ post '/' do
     grades_dom = mount_grades_dom academic_register
     rates_dom = mount_rates_dom academic_register
  
-    mount_page_dom activities_dom, grades_dom, rates_dom
+    result = mount_page_dom activities_dom, grades_dom, rates_dom
 
-    write_log "GET OK. Requester: #{ra}", :info
+    write_log "GET OK. Requester: #{academic_register}", :info
   rescue Exception => e
     result = { :status => 'EXCEPTION' } 
     write_log "Message: #{e.message}<br><br>Backtrace: #{e.backtrace}", :fatal

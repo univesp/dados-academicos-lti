@@ -99,7 +99,10 @@ helpers do
       if activity['hide_grades_and_attendances'] or activity['status'] == 'Aproveitamento de Estudos'
         grade = '-'
         attendance = '-'
-        status = 'Concluído' if activity['hide_grades_and_attendances'] and activity['status'] == 'Aprovado' 
+        if activity['hide_grades_and_attendances']
+          status = 'Concluído' if activity['status'] == 'Aprovado'
+          status = 'Não Concluído' if activity['status'] == 'Reprovado'
+        end
       end
       grades_dom << "<tr><td style='width:10%'>#{activity['code']}</td>"\
         "<td style='width:20%'>#{activity['name']}</td>"\
@@ -165,7 +168,7 @@ helpers do
       <div class='alert alert-warning' role='alert'>
         <div><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;&nbsp;Informações para simples conferência. Para retirar seu Histórico Escolar, solicite-o ao CASAluno.</div>
         <div><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;&nbsp;As notas são atualizadas somente após o término dos processos de avaliação e revisão.</div>
-        <div><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;&nbsp;Última sincronização realizada em #{last_update_time.strftime '%d/%m/%Y'}</div>
+        <div><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>&nbsp;&nbsp;Última sincronização realizada em #{last_update_time.strftime '%d/%m/%Y %H:%M:%S'}</div>
       </div>			
 
       <script>
