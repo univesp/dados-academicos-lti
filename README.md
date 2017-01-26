@@ -22,23 +22,26 @@ Evandro Almeida (evandrodevops@gmail.com)
 
 ### Instruções de instalação
 
-1. Clone o projeto do GitLab para o diretório no servidor
-
+Clone o projeto do GitLab para o diretório no servidor:
 ```
 $ git clone https://github.com/univesp/dados-academicos-lti.git
 ```
 
-2. Crie os diretórios data/ e log/, não versionados, no diretório raiz da aplicação
 
-3. Solicite o diretório config/, que não foi versionado, ao administrador e o copie para dentro do diretório raiz da aplicação.
+Crie os diretórios data/ e log/, não versionados, no diretório raiz da aplicação;
 
-4. Instale a gem "bundler", caso ainda não o tenha feito, e execute o comando "bundle" dentro do diretório raiz
+
+Solicite o diretório config/, que não foi versionado, ao administrador e o copie para dentro do diretório raiz da aplicação;
+
+
+Instale a gem "bundler", caso ainda não o tenha feito, e execute o comando "bundle" dentro do diretório raiz:
 ```
 $ gem install bundler
 $ bundle
 ```
-5. No ambiente de produção, configure uma location no NGINX para essa aplicação.
 
+
+No ambiente de produção, configure uma location no NGINX para essa aplicação:
 ```
 location ~ ^/dados-academicos-lti(/.*|$) {
     alias <RAIZ>/dados-academicos-lti/public$1;
